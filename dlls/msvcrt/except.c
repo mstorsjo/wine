@@ -276,6 +276,26 @@ int CDECL _XcptFilter(NTSTATUS ex, PEXCEPTION_POINTERS ptr)
 }
 
 /*********************************************************************
+ *		_seh_filter_dll (MSVCRT.@)
+ */
+int CDECL _seh_filter_dll(unsigned long ex, PEXCEPTION_POINTERS ptr)
+{
+    TRACE("(%08x,%p)\n", ex, ptr);
+    /* I assume ptr->ExceptionRecord->ExceptionCode is the same as ex */
+    return msvcrt_exception_filter(ptr);
+}
+
+/*********************************************************************
+ *		_seh_filter_exe (MSVCRT.@)
+ */
+int CDECL _seh_filter_exe(unsigned long ex, PEXCEPTION_POINTERS ptr)
+{
+    TRACE("(%08x,%p)\n", ex, ptr);
+    /* I assume ptr->ExceptionRecord->ExceptionCode is the same as ex */
+    return msvcrt_exception_filter(ptr);
+}
+
+/*********************************************************************
  *		_abnormal_termination (MSVCRT.@)
  */
 int CDECL _abnormal_termination(void)
