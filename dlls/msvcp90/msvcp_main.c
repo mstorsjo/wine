@@ -69,7 +69,11 @@ MSVCP_bool (__thiscall *critical_section_trylock)(critical_section*);
 #endif
 
 #define VERSION_STRING(ver) #ver
+#if _MSVCP_VER >= 140
+#define MSVCRT_NAME(ver) "msvcr120.dll"
+#else
 #define MSVCRT_NAME(ver) "msvcr" VERSION_STRING(ver) ".dll"
+#endif
 
 static void init_cxx_funcs(void)
 {
