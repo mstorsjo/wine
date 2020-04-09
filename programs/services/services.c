@@ -461,7 +461,7 @@ static void scmdatabase_autostart_services(struct scmdatabase *db)
         }
         err = service_start(service, 0, NULL);
         if (err != ERROR_SUCCESS)
-            WINE_FIXME("Auto-start service %s failed to start: %ld\n",
+            WINE_WARN("Auto-start service %s failed to start: %ld\n",
                        wine_dbgstr_w(service->name), err);
         release_service(service);
     }

@@ -211,7 +211,7 @@ static void vulkan_init_once(void)
 
 static void vulkan_init_once(void)
 {
-    ERR( "Wine was built without Vulkan support.\n" );
+    WARN( "Wine was built without Vulkan support.\n" );
 }
 
 #endif /* SONAME_LIBVULKAN */

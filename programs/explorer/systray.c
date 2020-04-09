@@ -1260,7 +1260,7 @@ void initialize_systray( BOOL arg_using_root, BOOL arg_enable_shell, BOOL arg_sh
 
     if (!tray_window)
     {
-        ERR( "Could not create tray window\n" );
+        WARN( "Could not create tray window\n" );
         return;
     }
 
