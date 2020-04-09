@@ -1952,7 +1952,7 @@ HRESULT WINAPI DECLSPEC_HOTPATCH CoCreateInstanceEx(REFCLSID rclsid, IUnknown *o
         if (hr == CLASS_E_NOAGGREGATION && outer)
             FIXME("Class %s does not support aggregation\n", debugstr_guid(&clsid));
         else
-            FIXME("no instance created for interface %s of class %s, hr %#lx.\n",
+            WARN("no instance created for interface %s of class %s, hr %#lx.\n",
                     debugstr_guid(results[0].pIID), debugstr_guid(&clsid), hr);
         return hr;
     }

@@ -769,8 +769,8 @@ static BOOL nodrv_CreateWindow( HWND hwnd )
     if (!parent || parent == UlongToHandle( NtUserGetThreadInfo()->msg_window )) return TRUE;
     if (warned++) return FALSE;
 
-    ERR_(winediag)( "Application tried to create a window, but no driver could be loaded.\n" );
-    if (driver_load_error[0]) ERR_(winediag)( "%s\n", debugstr_w(driver_load_error) );
+    WARN_(winediag)( "Application tried to create a window, but no driver could be loaded.\n" );
+    if (driver_load_error[0]) WARN_(winediag)( "%s\n", debugstr_w(driver_load_error) );
     return FALSE;
 }
 

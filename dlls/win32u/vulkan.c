@@ -3005,7 +3005,7 @@ static void vulkan_init_once(void)
     vulkan_handle = dlopen( SONAME_LIBVULKAN, RTLD_NOW );
     if (!vulkan_handle) ERR( "Failed to load %s\n", SONAME_LIBVULKAN );
 #else
-    ERR( "Wine was built without Vulkan support.\n" );
+    WARN( "Wine was built without Vulkan support.\n" );
 #endif
     if (!vulkan_handle) return;
 
