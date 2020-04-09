@@ -131,7 +131,7 @@ static NTSTATUS NTAPI kerberos_LsaApInitializePackage(ULONG package_id, PLSA_DIS
     if (!__wine_unixlib_handle)
     {
         if (__wine_init_unix_call() || KRB5_CALL( process_attach, NULL ))
-            ERR( "no Kerberos support, expect problems\n" );
+            WARN( "no Kerberos support, expect problems\n" );
     }
 
     lsa_dispatch = *dispatch;

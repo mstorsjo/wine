@@ -1100,7 +1100,7 @@ static void initialize_display_settings( unsigned int width, unsigned int height
 
         if (!EnumDisplaySettingsExW( device.DeviceName, ENUM_CURRENT_SETTINGS, &devmode, 0))
         {
-            ERR( "Failed to query current display settings for %s.\n", debugstr_w( device.DeviceName ) );
+            WARN( "Failed to query current display settings for %s.\n", debugstr_w( device.DeviceName ) );
             continue;
         }
 

@@ -373,7 +373,7 @@ static HRESULT convert_to_native_icon(IStream *icoFile, int *indices, int numInd
         &IID_IWICBitmapEncoder, (void**)&encoder);
     if (FAILED(hr))
     {
-        WINE_ERR("error 0x%08lX creating bitmap encoder\n", hr);
+        WINE_WARN("error 0x%08lX creating bitmap encoder\n", hr);
         goto end;
     }
     hr = SHCreateStreamOnFileW(outputFileName, STGM_CREATE | STGM_WRITE, &outputFile);
