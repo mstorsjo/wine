@@ -4121,7 +4121,7 @@ NTSTATUS WINAPI ZwLoadDriver( const UNICODE_STRING *service_name )
     RtlFreeUnicodeString( &drv_name );
     if (status != STATUS_SUCCESS)
     {
-        ERR( "failed to create driver %s: %08lx\n", debugstr_us(service_name), status );
+        WARN( "failed to create driver %s: %08lx\n", debugstr_us(service_name), status );
         goto error;
     }
 

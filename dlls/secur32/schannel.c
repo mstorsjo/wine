@@ -1722,7 +1722,7 @@ void SECUR32_initSchannelSP(void)
 
     if (__wine_init_unix_call() || GNUTLS_CALL( process_attach, NULL ))
     {
-        ERR( "no schannel support, expect problems\n" );
+        WARN( "no schannel support, expect problems\n" );
         return;
     }
 

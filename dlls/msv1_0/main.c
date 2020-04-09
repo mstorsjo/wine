@@ -115,7 +115,7 @@ static NTSTATUS NTAPI ntlm_LsaApInitializePackage( ULONG package_id, LSA_DISPATC
 
     if (ntlm_check_version())
     {
-        ERR( "no NTLM support, expect problems\n" );
+        WARN( "no NTLM support, expect problems\n" );
         return STATUS_UNSUCCESSFUL;
     }
 
@@ -138,7 +138,7 @@ static NTSTATUS NTAPI ntlm_SpInitialize( ULONG_PTR package_id, SECPKG_PARAMETERS
 
     if (ntlm_check_version())
     {
-        ERR( "no NTLM support, expect problems\n" );
+        WARN( "no NTLM support, expect problems\n" );
         return STATUS_UNSUCCESSFUL;
     }
     return STATUS_SUCCESS;

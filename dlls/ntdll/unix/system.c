@@ -1019,7 +1019,7 @@ static NTSTATUS create_logical_proc_info(void)
      */
     if(sysfs_count_list_elements("/sys/devices/system/cpu/present", &max_cpus) && max_cpus > MAXIMUM_PROCESSORS)
     {
-        FIXME("Improve CPU info reporting: system supports %u logical cores, but only %u supported!\n",
+        WARN("Improve CPU info reporting: system supports %u logical cores, but only %u supported!\n",
                 max_cpus, MAXIMUM_PROCESSORS);
     }
 
