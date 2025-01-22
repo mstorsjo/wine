@@ -514,7 +514,8 @@ char *get_alternate_wineloader( WORD machine )
     if (machine == current_machine) return NULL;
 
     /* try the 64-bit loader */
-    if (current_machine == IMAGE_FILE_MACHINE_I386 && machine == IMAGE_FILE_MACHINE_AMD64)
+    if ((current_machine == IMAGE_FILE_MACHINE_I386 && machine == IMAGE_FILE_MACHINE_AMD64) ||
+        (current_machine == IMAGE_FILE_MACHINE_ARMNT && machine == IMAGE_FILE_MACHINE_ARM64))
     {
         size_t len = strlen(wineloader);
 
