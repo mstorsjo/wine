@@ -1,4 +1,4 @@
-name: Build a docker image
+name: Test using the docker image
 on:
   push:
 
@@ -11,37 +11,42 @@ permissions:
   packages: write
 
 jobs:
-  docker-build:
+  test-wine:
     runs-on: ubuntu-24.04-arm
+    container: ghcr.io/mstorsjo/wine
     steps:
-      - uses: actions/checkout@v4
-      - name: Log in to the container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{env.REGISTRY}}
-          username: ${{github.actor}}
-          password: ${{secrets.GITHUB_TOKEN}}
-      - name: Build test images
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          load: true
-          file: ./Dockerfile
-          tags: |
-            ubuntu-wine:latest
-      - name: Test running binaries
+      - name: Test wine
         run: |
           set -x
-          cd /tmp
+          whoami
+          id
+          pwd
+          echo $HOME
+          echo $WINEPREFIX
+          ls -la /
+          ls -la /github
+          ls -la /github/home
+          wine wineboot
           curl -LO https://martin.st/temp/hello-aarch64.exe
           curl -LO https://martin.st/temp/hello-armv7.exe
-          docker run -v .:/host ubuntu-wine wine /host/hello-aarch64.exe
-          docker run -v .:/host ubuntu-wine wine /host/hello-armv7.exe
-      - name: Build and push images
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          file: ./Dockerfile
-          tags: |
-            ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:latest
+          wine hello-aarch64.exe
+          wine hello-armv7.exe
+
+  test-wine-arm64:
+    runs-on: ubuntu-24.04
+    container: linaro/wine-arm64
+    steps:
+      - name: Test wine
+        run: |
+          set -x
+          whoami
+          id
+          pwd
+          echo $HOME
+          echo $WINEPREFIX
+          ls -la /
+          ls -la /github
+          ls -la /github/home
+          wine-arm64 wineboot
+          curl -LO https://martin.st/temp/hello-aarch64.exe
+          wine-arm64 hello-aarch64.exe
