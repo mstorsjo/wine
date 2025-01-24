@@ -37,10 +37,14 @@ RUN dpkg --add-architecture armhf && \
         libx11-6 libfreetype6 libx11-6:armhf libfreetype6:armhf \
         build-essential git curl rsync sudo
 
+# Don't require "-y" to apt-get, to match regular github action runner
+# environments.
+RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes
+
 COPY --from=build /opt/wine /opt/wine
 ENV PATH=/opt/wine/bin:$PATH
 
-# Set a fixed WINEPREFIX, regardless of $HOME; github actions runners run the
+# Set a fixed WINEPREFIX, regardless of $HOME; github action runners run the
 # container with a custom $HOME with a different uid, causing "wine:
 # '/github/home' is not owned by you, refusing to create a configuration
 # directory there".
