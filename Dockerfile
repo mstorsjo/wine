@@ -43,3 +43,9 @@ RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes
 
 COPY --from=build /opt/wine /opt/wine
 ENV PATH=/opt/wine/bin:$PATH
+
+# Set a fixed WINEPREFIX, regardless of $HOME; github action runners run the
+# container with a custom $HOME with a different uid, causing "wine:
+# '/github/home' is not owned by you, refusing to create a configuration
+# directory there".
+ENV WINEPREFIX=/root/.wineprefix
