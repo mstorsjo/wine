@@ -1,0 +1,47 @@
+name: Build a docker image
+on:
+  push:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{github.repository}}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{env.REGISTRY}}
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+      - name: Build test images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          file: ./Dockerfile
+          tags: |
+            ubuntu-wine:latest
+      - name: Test running binaries
+        run: |
+          set -x
+          cd /tmp
+          curl -LO https://martin.st/temp/hello-aarch64.exe
+          curl -LO https://martin.st/temp/hello-armv7.exe
+          docker run -v .:/host ubuntu-wine wine /host/hello-aarch64.exe
+          docker run -v .:/host ubuntu-wine wine /host/hello-armv7.exe
+      - name: Build and push images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          file: ./Dockerfile
+          tags: |
+            ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:latest
