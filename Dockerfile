@@ -33,3 +33,6 @@ RUN dpkg --add-architecture armhf && apt-get update && apt-get install -y build-
 
 COPY --from=build /opt/wine /opt/wine
 ENV PATH=/opt/wine/bin:$PATH
+# Set a fixed WINEPREFIX, regardless of a custom $HOME; github actions
+# runners run the container with a custom $HOME with a different uid.
+ENV WINEPREFIX=/root/.wineprefix
