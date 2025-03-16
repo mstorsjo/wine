@@ -158,6 +158,7 @@ static const char *ln_s;
 static const char *sed_cmd;
 static const char *wayland_scanner;
 static const char *sarif_converter;
+static const char *compiler_rt;
 static int so_dll_supported;
 static int unix_lib_supported;
 /* per-architecture global variables */
@@ -601,6 +602,25 @@ static int is_native_arch_disabled( struct makefile *make )
         if (make->disabled[arch] && !strcmp( archs.str[0], archs.str[arch] ))
             return 1;
     return 0;
+}
+
+
+/*******************************************************************
+ *         is_subdir_other_arch
+ *
+ * Check if the filename is in a subdirectory named from a different arch.
+ * Used to avoid building asm files for the wrong platform.
+ */
+static int is_subdir_other_arch( const char *name, unsigned int arch )
+{
+    const char *dir, *p = strrchr( name, '/' );
+
+    if (!p || p == name) return 0;
+    dir = get_basename( strmake( "%.*s", (int)(p - name), name ));
+    if (!strcmp( dir, "arm64" )) dir = "aarch64";
+    if (!strcmp( dir, "amd64" )) dir = "x86_64";
+    if (native_archs[arch] && !strcmp( dir, archs.str[native_archs[arch]] )) return 0;
+    return strcmp( dir, archs.str[arch] );
 }
 
 
@@ -2263,17 +2283,28 @@ static const char *get_crt_define( const struct makefile *make )
 /*******************************************************************
  *         get_default_imports
  */
-static struct strarray get_default_imports( const struct makefile *make, struct strarray imports )
+static struct strarray get_default_imports( const struct makefile *make, struct strarray imports,
+                                            int nodefaultlibs )
 {
     struct strarray ret = empty_strarray;
     const char *crt_dll = get_default_crt( make );
     unsigned int i;
+
+    if (nodefaultlibs)
+    {
+        for (i = 0; i < imports.count; i++)
+            if (!strcmp( imports.str[i], "winecrt0" )) return ret;
+        strarray_add( &ret, "winecrt0" );
+        if (compiler_rt) strarray_add( &ret, compiler_rt );
+        return ret;
+    }
 
     for (i = 0; i < imports.count; i++)
         if (is_crt_module( imports.str[i] ))
             crt_dll = imports.str[i];
 
     strarray_add( &ret, "winecrt0" );
+    if (compiler_rt) strarray_add( &ret, compiler_rt );
     if (crt_dll) strarray_add( &ret, crt_dll );
 
     if (make->is_win16 && (!make->importlib || strcmp( make->importlib, "kernel" )))
@@ -3117,7 +3148,7 @@ static void output_source_testdll( struct makefile *make, struct incl_file *sour
     if (!imports.count) imports = make->imports;
     strarray_addall( &dll_flags, make->extradllflags );
     strarray_addall( &dll_flags, get_expanded_file_local_var( make, obj, "EXTRADLLFLAGS" ));
-    if (!strarray_exists( &dll_flags, "-nodefaultlibs" )) default_imports = get_default_imports( make, imports );
+    default_imports = get_default_imports( make, imports, strarray_exists( &dll_flags, "-nodefaultlibs" ));
     if (strarray_exists( &dll_flags, "-mconsole" )) ext = ".exe";
 
     for (arch = 0; arch < archs.count; arch++)
@@ -3218,6 +3249,8 @@ static void output_source_one_arch( struct makefile *make, struct incl_file *sou
         if (!so_dll_supported) return;
         if (!(source->file->flags & FLAG_C_IMPLIB) && (!make->staticlib || make->extlib)) return;
     }
+
+    if (strendswith( source->name, ".S" ) && is_subdir_other_arch( source->name, arch )) return;
 
     obj_name = strmake( "%s%s.o", source->arch ? "" : arch_dirs[arch], obj );
     strarray_add( targets, obj_name );
@@ -3459,8 +3492,8 @@ static void output_module( struct makefile *make, unsigned int arch )
         if (!get_link_arch( make, arch, &link_arch )) return;
 
         module_name = arch_module_name( make->module, arch );
-
-        if (!strarray_exists( &make->extradllflags, "-nodefaultlibs" )) default_imports = get_default_imports( make, imports );
+        default_imports = get_default_imports( make, imports,
+                                               strarray_exists( &make->extradllflags, "-nodefaultlibs" ));
 
         strarray_addall( &all_libs, add_import_libs( make, &dep_libs, imports, IMPORT_TYPE_DIRECT, arch ));
         strarray_addall( &all_libs, add_import_libs( make, &dep_libs, make->delayimports, IMPORT_TYPE_DELAYED, arch ));
@@ -3595,6 +3628,7 @@ static void output_static_lib( struct makefile *make, unsigned int arch )
     const char *name = strmake( "%s%s", arch_dirs[arch], make->staticlib );
     unsigned int hybrid_arch = hybrid_archs[arch];
 
+    if (make->disabled[arch]) return;
     if (native_archs[arch]) return;
 
     strarray_add( &make->clean_files, name );
@@ -3609,9 +3643,8 @@ static void output_static_lib( struct makefile *make, unsigned int arch )
     if (hybrid_arch) output_filenames_obj_dir( make, make->object_files[hybrid_arch] );
     if (!arch) output_filenames_obj_dir( make, make->unixobj_files );
     output( "\n" );
-    if (!make->extlib)
-        add_install_rule( make, make->staticlib, arch, name,
-                          strmake( "d%s%s", arch_install_dirs[arch], make->staticlib ));
+    add_install_rule( make, make->staticlib, arch, name,
+                      strmake( "d%s%s", arch_install_dirs[arch], make->staticlib ));
 }
 
 
@@ -3623,7 +3656,7 @@ static void output_test_module( struct makefile *make, unsigned int arch )
     char *basemodule = replace_extension( make->testdll, ".dll", "" );
     char *stripped = arch_module_name( strmake( "%s_test-stripped.exe", basemodule ), arch );
     char *testmodule = arch_module_name( strmake( "%s_test.exe", basemodule ), arch );
-    struct strarray default_imports = get_default_imports( make, make->imports );
+    struct strarray default_imports = get_default_imports( make, make->imports, 0 );
     struct strarray dep_libs = empty_strarray;
     struct strarray all_libs = empty_strarray;
     struct makefile *parent = get_parent_makefile( make );
@@ -4435,7 +4468,7 @@ static void load_sources( struct makefile *make )
     {
         /* add default install rules if nothing was specified */
         for (i = 0; i < NB_INSTALL_RULES; i++) if (make->install[i].count) break;
-        if (i == NB_INSTALL_RULES)
+        if (i == NB_INSTALL_RULES && !make->extlib)
         {
             if (make->importlib) strarray_add( &make->install[INSTALL_DEV], make->importlib );
             if (make->staticlib) strarray_add( &make->install[INSTALL_DEV], make->staticlib );
@@ -4619,6 +4652,7 @@ int main( int argc, char *argv[] )
     ln_s               = get_expanded_make_variable( top_makefile, "LN_S" );
     wayland_scanner    = get_expanded_make_variable( top_makefile, "WAYLAND_SCANNER" );
     sarif_converter    = get_expanded_make_variable( top_makefile, "SARIF_CONVERTER" );
+    compiler_rt        = get_expanded_make_variable( top_makefile, "COMPILER_RT_PE_LIBS" );
 
     if (root_src_dir && !strcmp( root_src_dir, "." )) root_src_dir = NULL;
     if (tools_dir && !strcmp( tools_dir, "." )) tools_dir = NULL;
