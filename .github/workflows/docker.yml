@@ -45,3 +45,4 @@ jobs:
           file: ./Dockerfile
           tags: |
             ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:latest
+            ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:10.0-v3
