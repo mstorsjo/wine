@@ -33,10 +33,15 @@ jobs:
         run: |
           set -x
           cd /tmp
-          curl -LO https://martin.st/temp/hello-aarch64.exe
-          curl -LO https://martin.st/temp/hello-armv7.exe
-          docker run -v .:/host ubuntu-wine wine /host/hello-aarch64.exe
-          docker run -v .:/host ubuntu-wine wine /host/hello-armv7.exe
+          curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20260602/llvm-mingw-20260602-ucrt-ubuntu-22.04-aarch64.tar.xz
+          tar -Jxvf llvm-mingw-*.tar.xz
+          rm -f llvm-mingw-*.tar.xz
+          mv llvm-mingw-* llvm-mingw
+          curl -LO https://raw.githubusercontent.com/mstorsjo/llvm-mingw/refs/tags/20260602/test/hello.c
+          for arch in aarch64 armv7; do
+              ./llvm-mingw/bin/$arch-w64-mingw32-clang hello.c -o hello-$arch.exe
+              docker run -v .:/host ubuntu-wine wine /host/hello-$arch.exe
+          done
       - name: Build and push images
         uses: docker/build-push-action@v5
         with:
