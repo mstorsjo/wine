@@ -38,7 +38,7 @@ jobs:
           rm -f llvm-mingw-*.tar.xz
           mv llvm-mingw-* llvm-mingw
           curl -LO https://raw.githubusercontent.com/mstorsjo/llvm-mingw/refs/tags/20260602/test/hello.c
-          for arch in aarch64 armv7; do
+          for arch in aarch64 armv7 arm64ec x86_64 i686; do
               ./llvm-mingw/bin/$arch-w64-mingw32-clang hello.c -o hello-$arch.exe
               docker run -v .:/host ubuntu-wine wine /host/hello-$arch.exe
           done
