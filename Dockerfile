@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 as build
+FROM ubuntu:24.04 AS build
 
 RUN dpkg --add-architecture armhf && \
     apt-get update && \
@@ -19,7 +19,7 @@ RUN mkdir wine-build64 && \
     make -j$(nproc) && \
     make -j$(nproc) install-lib
 
-FROM ubuntu:24.04 as runtime
+FROM ubuntu:24.04 AS runtime
 
 RUN dpkg --add-architecture armhf && \
     apt-get update && \
