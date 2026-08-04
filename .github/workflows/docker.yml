@@ -29,6 +29,9 @@ jobs:
           file: ./Dockerfile
           tags: |
             ubuntu-wine:latest
+      - name: Inspect images
+        run: |
+          docker images
       - name: Test running binaries
         run: |
           set -x
