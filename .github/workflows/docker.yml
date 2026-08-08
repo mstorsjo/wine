@@ -52,5 +52,4 @@ jobs:
           push: true
           file: ./Dockerfile
           tags: |
-            ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:latest
-            ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:11.15-v1
+            ${{env.REGISTRY}}/${{env.IMAGE_NAME}}:11.15-fex-v1
